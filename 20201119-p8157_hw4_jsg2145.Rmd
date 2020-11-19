@@ -1,0 +1,30 @@
+---
+title: "20201119-p8157_hw4_jsg2145"
+author: "Jared Garfinkel"
+date: "11/19/2020"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(viridis)
+library(lme4)
+library(geepack)
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	message = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis",
+  scipen = 999
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+```
