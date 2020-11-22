@@ -420,16 +420,22 @@ tab1</code></pre>
 ##   0 0.91 0.09
 ##   1 0.09 0.91</code></pre>
 <pre class="r"><code># df
-model_lag_1 &lt;- gee(y ~ treatment * y_1 + month, corstr = &quot;independence&quot;, family = binomial(&quot;logit&quot;), id = id, data = df)</code></pre>
-<pre><code>##   (Intercept)     treatment           y_1         month treatment:y_1 
-##    -2.8093028    -0.8440623     4.1947885    -0.1139145     0.7144959</code></pre>
+model_lag_1 &lt;- gee(y ~ treatment * (y_1 + month), corstr = &quot;independence&quot;, family = binomial(&quot;logit&quot;), id = id, data = df)</code></pre>
+<pre><code>##     (Intercept)       treatment             y_1           month   treatment:y_1 
+##     -2.91754387     -0.58731398      4.20408170     -0.09042707      0.69205101 
+## treatment:month 
+##     -0.05921630</code></pre>
 <pre class="r"><code>round(summary(model_lag_1)$coeff,2)</code></pre>
-<pre><code>##               Estimate Naive S.E. Naive z Robust S.E. Robust z
-## (Intercept)      -2.81       0.29   -9.70        0.28    -9.98
-## treatment        -0.84       0.45   -1.90        0.42    -2.02
-## y_1               4.19       0.31   13.60        0.33    12.54
-## month            -0.11       0.03   -3.66        0.03    -3.40
-## treatment:y_1     0.71       0.51    1.40        0.49     1.45</code></pre>
+<pre><code>##                 Estimate Naive S.E. Naive z Robust S.E. Robust z
+## (Intercept)        -2.92       0.32   -9.05        0.30    -9.58
+## treatment          -0.59       0.53   -1.10        0.48    -1.21
+## y_1                 4.20       0.31   13.40        0.33    12.57
+## month              -0.09       0.04   -2.24        0.04    -2.31
+## treatment:y_1       0.69       0.52    1.33        0.49     1.40
+## treatment:month    -0.06       0.07   -0.91        0.07    -0.81</code></pre>
+</div>
+<div id="part-2" class="section level2">
+<h2>Part 2</h2>
 <pre class="r"><code>df2 = data %&gt;% 
   data.table()
 # add response at lag 1 
@@ -447,31 +453,261 @@ tab2</code></pre>
 ##        0    1
 ##   0 0.83 0.17
 ##   1 0.16 0.84</code></pre>
-<pre class="r"><code>model_lag_2 &lt;- gee(y ~ treatment * y_2 + month, corstr = &quot;independence&quot;, family = binomial(&quot;logit&quot;), id = id, data = df2)</code></pre>
-<pre><code>##   (Intercept)     treatment           y_2         month treatment:y_2 
-##    -2.2245936    -0.5362388     2.9930076    -0.1459866     0.2839296</code></pre>
+<pre class="r"><code>model_lag_2 &lt;- gee(y ~ treatment * (y_2 + month), corstr = &quot;independence&quot;, family = binomial(&quot;logit&quot;), id = id, data = df2)</code></pre>
+<pre><code>##     (Intercept)       treatment             y_2           month   treatment:y_2 
+##     -2.34626955     -0.24951642      2.99108562     -0.12274020      0.28338438 
+## treatment:month 
+##     -0.05748224</code></pre>
 <pre class="r"><code>round(summary(model_lag_2)$coeff,2)</code></pre>
-<pre><code>##               Estimate Naive S.E. Naive z Robust S.E. Robust z
-## (Intercept)      -2.22       0.29   -7.55        0.34    -6.61
-## treatment        -0.54       0.40   -1.36        0.45    -1.20
-## y_2               2.99       0.30    9.99        0.36     8.31
-## month            -0.15       0.03   -4.77        0.04    -3.72
-## treatment:y_2     0.28       0.46    0.62        0.54     0.53</code></pre>
-<pre class="r"><code>model_lag_2b &lt;- gee(y ~ treatment * (y_1 + y_2) + month, corstr = &quot;independence&quot;, family = binomial(&quot;logit&quot;), id = id, data = df)</code></pre>
-<pre><code>##   (Intercept)     treatment           y_1           y_2         month 
-##   -2.90028180   -0.83861051    3.26711040    0.73980008   -0.08588126 
-## treatment:y_1 treatment:y_2 
-##    2.33507404   -1.68000316</code></pre>
+<pre><code>##                 Estimate Naive S.E. Naive z Robust S.E. Robust z
+## (Intercept)        -2.35       0.33   -7.06        0.38    -6.20
+## treatment          -0.25       0.51   -0.49        0.57    -0.44
+## y_2                 2.99       0.30    9.83        0.36     8.38
+## month              -0.12       0.04   -3.08        0.05    -2.61
+## treatment:y_2       0.28       0.47    0.60        0.54     0.53
+## treatment:month    -0.06       0.06   -0.90        0.08    -0.68</code></pre>
+<pre class="r"><code>model_lag_2b &lt;- gee(y ~ treatment * (y_1 + y_2 + month), corstr = &quot;independence&quot;, family = binomial(&quot;logit&quot;), id = id, data = df)</code></pre>
+<pre><code>##     (Intercept)       treatment             y_1             y_2           month 
+##     -3.05941334     -0.43737470      3.29362134      0.74239666     -0.05985574 
+##   treatment:y_1   treatment:y_2 treatment:month 
+##      2.36414282     -1.78090434     -0.06984192</code></pre>
 <pre class="r"><code>round(summary(model_lag_2b)$coeff,2)</code></pre>
-<pre><code>##               Estimate Naive S.E. Naive z Robust S.E. Robust z
-## (Intercept)      -2.90       0.34   -8.41        0.33    -8.68
-## treatment        -0.84       0.49   -1.70        0.46    -1.84
-## y_1               3.27       0.47    6.96        0.38     8.71
-## y_2               0.74       0.47    1.58        0.37     2.00
-## month            -0.09       0.03   -2.49        0.04    -2.33
-## treatment:y_1     2.34       1.03    2.27        0.92     2.53
-## treatment:y_2    -1.68       0.99   -1.70        0.85    -1.98</code></pre>
+<pre><code>##                 Estimate Naive S.E. Naive z Robust S.E. Robust z
+## (Intercept)        -3.06       0.40   -7.70        0.39    -7.88
+## treatment          -0.44       0.65   -0.67        0.60    -0.73
+## y_1                 3.29       0.48    6.89        0.38     8.74
+## y_2                 0.74       0.47    1.57        0.37     2.01
+## month              -0.06       0.04   -1.35        0.04    -1.34
+## treatment:y_1       2.36       1.06    2.22        0.94     2.51
+## treatment:y_2      -1.78       1.02   -1.74        0.88    -2.03
+## treatment:month    -0.07       0.07   -0.95        0.08    -0.88</code></pre>
 <p>A second order model shows significant association between the second order lag and the outcome. When the first order lag variable is added back in, the second order variable remains significant.</p>
+</div>
+<div id="part-3" class="section level2">
+<h2>Part 3</h2>
+<p>The intercept is the log odds for those who were in the treatment group B who did not have onycholysis in the previous two visits.</p>
+<p>The treatment estimate is the log odds for those who were in treatment group B who had an identical status for onycholysis in the previous visit and the visit before that.</p>
+<p>The y_1 and y_2 variables are the log odds for those with and without onycholysis in their previous visit or second previous visit who currently have an identical status for treatment group.</p>
+<p>The month variable is the log odds of having onycholysis holding treatment group and the status of onycholysis in the previous visit or second previous visit constant.</p>
+<p>Since the treatment effect is not found to be significant when the interactions are accounted for, it appears that there is not enough evidence to reject the null hypothesis that treatment A is associated with a change in the outcome of onycholysis.</p>
+<p>For the interaction terms treatment:y_1 and treatment:y_2, the estimate is the difference in log odds for each lag comparing treatment B and treatment A groups with other covariates held fixed.</p>
+<p>For the interaction term treatment:month, the estimate is the difference in log odds for each month comparing treatment B and treatment A groups with other covariates held fixed.</p>
+</div>
+<div id="part-4" class="section level2">
+<h2>Part 4</h2>
+<p>In these interpretations we assume that by conditioning on at least on lagged variable, all residual error can be due to random error. This interpretation differs from previous interpretations that used random intercepts or</p>
+</div>
+</div>
+<div id="question-2" class="section level1">
+<h1>Question 2</h1>
+<div id="data-cleaning" class="section level3">
+<h3>Data cleaning</h3>
+<pre class="r"><code>toenail2 &lt;- tidyr::complete(data, id, visit) %&gt;%
+  tidyr::fill(treatment)
+toenail2 &lt;- as.data.table(toenail2)
+data_comp = complete(data, id, visit)</code></pre>
+</div>
+<div id="explore-missingness" class="section level3">
+<h3>Explore missingness</h3>
+<pre class="r"><code>M = data %&gt;% 
+  pull(visit) %&gt;% 
+  unique() %&gt;% 
+  length()
+
+data %&gt;% 
+  group_by(id) %&gt;% 
+  filter(length(unique(visit)) &lt; M) %&gt;% 
+  summarize(missingno = M - length(unique(visit))) %&gt;% 
+  summarize(totalmissing = sum(missingno))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   totalmissing
+##          &lt;int&gt;
+## 1          150</code></pre>
+<pre class="r"><code>data %&gt;% 
+  ggplot(aes(x = visit, y = stat(count))) +
+  geom_bar()</code></pre>
+<p><img src="data:image/png;base64,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" width="90%" /></p>
+</div>
+<div id="part-1-1" class="section level2">
+<h2>Part 1</h2>
+<pre class="r"><code>table(data_comp$y,useNA = &quot;always&quot;)</code></pre>
+<pre><code>## 
+##    0    1 &lt;NA&gt; 
+## 1500  408  150</code></pre>
+<pre class="r"><code>data_comp = data_comp %&gt;% 
+  data.table()
+count &lt;- data_comp[,j = list(n=sum(!is.na(y))), by = &quot;id&quot;]
+table(count$n)</code></pre>
+<pre><code>## 
+##   1   2   3   4   5   6   7 
+##   5   3   7   6  10  39 224</code></pre>
+<pre class="r"><code>count &lt;- count[n==3]
+data_comp1 &lt;- data_comp[id %in% count$id]
+table(data_comp1$y,useNA = &quot;always&quot;)</code></pre>
+<pre><code>## 
+##    0    1 &lt;NA&gt; 
+##   16    5   28</code></pre>
+<pre class="r"><code>table(data_comp1$treatment,data_comp1$y,useNA = &quot;always&quot;)</code></pre>
+<pre><code>##       
+##         0  1 &lt;NA&gt;
+##   0     9  3    0
+##   1     7  2    0
+##   &lt;NA&gt;  0  0   28</code></pre>
+<pre class="r"><code>gee1 &lt;- geeglm(y ~ treatment * visit, id = id, data = data_comp1, family = binomial(link = &quot;logit&quot;), corstr = &quot;independence&quot;)
+summary(gee1)</code></pre>
+<pre><code>## 
+## Call:
+## geeglm(formula = y ~ treatment * visit, family = binomial(link = &quot;logit&quot;), 
+##     data = data_comp1, id = id, corstr = &quot;independence&quot;)
+## 
+##  Coefficients:
+##                 Estimate  Std.err  Wald Pr(&gt;|W|)   
+## (Intercept)     -0.71734  1.20792 0.353  0.55260   
+## treatment        1.41975  2.02730 0.490  0.48373   
+## visit           -0.18094  0.08943 4.094  0.04304 * 
+## treatment:visit -0.90192  0.29006 9.668  0.00187 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation structure = independence 
+## Estimated Scale Parameters:
+## 
+##             Estimate Std.err
+## (Intercept)   0.9418    0.52
+## Number of clusters:   7  Maximum cluster size: 3</code></pre>
+</div>
+<div id="part-2-1" class="section level2">
+<h2>Part 2</h2>
+<pre class="r"><code>data_comp2 &lt;- data_comp
+table(data_comp2$y,useNA = &quot;always&quot;)</code></pre>
+<pre><code>## 
+##    0    1 &lt;NA&gt; 
+## 1500  408  150</code></pre>
+<pre class="r"><code>table(data_comp2$treatment,data_comp2$y,useNA = &quot;always&quot;)</code></pre>
+<pre><code>##       
+##          0   1 &lt;NA&gt;
+##   0    723 214    0
+##   1    777 194    0
+##   &lt;NA&gt;   0   0  150</code></pre>
+<pre class="r"><code>gee2 &lt;- geeglm(y ~ treatment * visit, id = id, data = data_comp2, family = binomial(link = &quot;logit&quot;), corstr = &quot;independence&quot;)
+summary(gee2)</code></pre>
+<pre><code>## 
+## Call:
+## geeglm(formula = y ~ treatment * visit, family = binomial(link = &quot;logit&quot;), 
+##     data = data_comp2, id = id, corstr = &quot;independence&quot;)
+## 
+##  Coefficients:
+##                 Estimate Std.err  Wald        Pr(&gt;|W|)    
+## (Intercept)      -0.0325  0.2112  0.02            0.88    
+## treatment         0.1393  0.3106  0.20            0.65    
+## visit            -0.3348  0.0477 49.32 0.0000000000022 ***
+## treatment:visit  -0.1057  0.0753  1.97            0.16    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation structure = independence 
+## Estimated Scale Parameters:
+## 
+##             Estimate Std.err
+## (Intercept)    0.986   0.159
+## Number of clusters:   294  Maximum cluster size: 7</code></pre>
+</div>
+<div id="part-3-1" class="section level2">
+<h2>Part 3</h2>
+<pre class="r"><code>data = data %&gt;% 
+  data.table()
+data_comp3 &lt;- lapply(unique(data$id), function(z){tidyr::fill(data[id == z], y)})
+data_comp3 &lt;- rbindlist(data_comp3)
+table(data_comp3$treatment,data_comp3$y,useNA = &quot;always&quot;)</code></pre>
+<pre><code>##       
+##          0   1 &lt;NA&gt;
+##   0    723 214    0
+##   1    777 194    0
+##   &lt;NA&gt;   0   0    0</code></pre>
+<pre class="r"><code>gee3 &lt;- geeglm(y ~ treatment * visit, id = id, data = data_comp3, family = binomial(link = &quot;logit&quot;), corstr = &quot;independence&quot;)
+summary(gee3)</code></pre>
+<pre><code>## 
+## Call:
+## geeglm(formula = y ~ treatment * visit, family = binomial(link = &quot;logit&quot;), 
+##     data = data_comp3, id = id, corstr = &quot;independence&quot;)
+## 
+##  Coefficients:
+##                 Estimate Std.err  Wald        Pr(&gt;|W|)    
+## (Intercept)      -0.0325  0.2112  0.02            0.88    
+## treatment         0.1393  0.3106  0.20            0.65    
+## visit            -0.3348  0.0477 49.32 0.0000000000022 ***
+## treatment:visit  -0.1057  0.0753  1.97            0.16    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation structure = independence 
+## Estimated Scale Parameters:
+## 
+##             Estimate Std.err
+## (Intercept)    0.986   0.159
+## Number of clusters:   294  Maximum cluster size: 7</code></pre>
+</div>
+<div id="part-4-1" class="section level2">
+<h2>Part 4</h2>
+<pre class="r"><code>data4 &lt;- data
+pred &lt;- make.predictorMatrix(data4)
+pred</code></pre>
+<pre><code>##           id y treatment month visit
+## id         0 1         1     1     1
+## y          1 0         1     1     1
+## treatment  1 1         0     1     1
+## month      1 1         1     0     1
+## visit      1 1         1     1     0</code></pre>
+<pre class="r"><code>pred[&quot;y&quot;, &quot;id&quot;] &lt;- -2
+pred</code></pre>
+<pre><code>##           id y treatment month visit
+## id         0 1         1     1     1
+## y         -2 0         1     1     1
+## treatment  1 1         0     1     1
+## month      1 1         1     0     1
+## visit      1 1         1     1     0</code></pre>
+<pre class="r"><code>pred &lt;- pred[&quot;y&quot;,,drop = FALSE]
+pred</code></pre>
+<pre><code>##   id y treatment month visit
+## y -2 0         1     1     1</code></pre>
+<pre class="r"><code>data4$id &lt;- as.integer(data4$id)
+imp &lt;- mice(data4, method = &quot;2l.bin&quot;, pred = pred, seed = 719, maxit = 1, m = 5, print = FALSE, blocks = list(c(&quot;y&quot;)))
+table(mice::complete(imp)$y, useNA = &quot;always&quot;)</code></pre>
+<pre><code>## 
+##    0    1 &lt;NA&gt; 
+## 1500  408    0</code></pre>
+<pre class="r"><code>implist &lt;- mids2mitml.list(imp)
+gee4 &lt;- with(implist, geeglm(y ~ treatment * visit, id=id, family = binomial, corstr = &quot;independence&quot;))
+testEstimates(gee4)</code></pre>
+<pre><code>## 
+## Call:
+## 
+## testEstimates(model = gee4)
+## 
+## Final parameter estimates and inferences obtained from 5 imputed data sets.
+## 
+##                  Estimate Std.Error   t.value        df   P(&gt;|t|)       RIV       FMI 
+## (Intercept)        -0.033     0.211    -0.154       Inf     0.878     0.000     0.000 
+## treatment           0.139     0.311     0.449       Inf     0.654     0.000     0.000 
+## visit              -0.335     0.048    -7.023       Inf     0.000     0.000     0.000 
+## treatment:visit    -0.106     0.075    -1.404       Inf     0.160     0.000     0.000 
+## 
+## Unadjusted hypothesis test as appropriate in larger samples.</code></pre>
+</div>
+<div id="part-5" class="section level2">
+<h2>Part 5</h2>
+<pre class="r"><code>lme1 &lt;- mice::complete(imp, &quot;all&quot;) %&gt;%
+    purrr::map(lme4::glmer,
+               formula = y ~ treatment * visit + (1 | id),
+               family = binomial) %&gt;%
+    pool() %&gt;%
+    summary()</code></pre>
+<pre class="r"><code>lme1</code></pre>
+<pre><code>##              term estimate std.error statistic   df p.value
+## 1     (Intercept)  -1.4252    0.8656   -1.6464 1901  0.0998
+## 2       treatment  -0.0101    0.7836   -0.0129 1901  0.9897
+## 3           visit  -0.8044    0.0892   -9.0149 1901  0.0000
+## 4 treatment:visit  -0.2351    0.1261   -1.8643 1901  0.0624</code></pre>
 </div>
 </div>
 

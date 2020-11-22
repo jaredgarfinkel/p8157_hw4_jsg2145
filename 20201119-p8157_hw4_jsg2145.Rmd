@@ -12,6 +12,8 @@ library(lme4)
 library(geepack)
 library(data.table)
 library(gee)
+library(mice)
+library(mitml)
 knitr::opts_chunk$set(
 	echo = TRUE,
 	warning = FALSE,
@@ -55,7 +57,7 @@ round(prop.table(tab1,margin = 1),2)
 
 ```{r}
 # df
-model_lag_1 <- gee(y ~ treatment * y_1 + month, corstr = "independence", family = binomial("logit"), id = id, data = df)
+model_lag_1 <- gee(y ~ treatment * (y_1 + month), corstr = "independence", family = binomial("logit"), id = id, data = df)
 round(summary(model_lag_1)$coeff,2)
 ```
 ## Part 2
@@ -73,12 +75,12 @@ round(prop.table(tab2,margin = 1),2)
 ```
 
 ```{r}
-model_lag_2 <- gee(y ~ treatment * y_2 + month, corstr = "independence", family = binomial("logit"), id = id, data = df2)
+model_lag_2 <- gee(y ~ treatment * (y_2 + month), corstr = "independence", family = binomial("logit"), id = id, data = df2)
 round(summary(model_lag_2)$coeff,2)
 ```
 
 ```{r}
-model_lag_2b <- gee(y ~ treatment * (y_1 + y_2) + month, corstr = "independence", family = binomial("logit"), id = id, data = df)
+model_lag_2b <- gee(y ~ treatment * (y_1 + y_2 + month), corstr = "independence", family = binomial("logit"), id = id, data = df)
 round(summary(model_lag_2b)$coeff,2)
 ```
 
@@ -94,14 +96,121 @@ The y_1 and y_2 variables are the log odds for those with and without onycholysi
 
 The month variable is the log odds of having onycholysis holding treatment group and the status of onycholysis in the previous visit or second previous visit constant.
 
+Since the treatment effect is not found to be significant when the interactions are accounted for, it appears that there is not enough evidence to reject the null hypothesis that treatment A is associated with a change in the outcome of onycholysis.
+
+For the interaction terms treatment:y_1 and treatment:y_2, the estimate is the difference in log odds for each lag comparing treatment B and treatment A groups with other covariates held fixed. 
+
+For the interaction term treatment:month, the estimate is the difference in log odds for each month comparing treatment B and treatment A groups with other covariates held fixed.
+
 ## Part 4
 
-In these interpretations we assume that by conditioning on at least on lagged variable, all residual error can be due to random error.
+In these interpretations we assume that by conditioning on at least on lagged variable, all residual error can be due to random error. This interpretation differs from previous interpretations that used random intercepts or 
 
 # Question 2
 
+### Data cleaning
+
+```{r}
+toenail2 <- tidyr::complete(data, id, visit) %>%
+  tidyr::fill(treatment)
+toenail2 <- as.data.table(toenail2)
+data_comp = complete(data, id, visit)
+```
+
+### Explore missingness
+
+```{r}
+M = data %>% 
+  pull(visit) %>% 
+  unique() %>% 
+  length()
+
+data %>% 
+  group_by(id) %>% 
+  filter(length(unique(visit)) < M) %>% 
+  summarize(missingno = M - length(unique(visit))) %>% 
+  summarize(totalmissing = sum(missingno))
+
+data %>% 
+  ggplot(aes(x = visit, y = stat(count))) +
+  geom_bar()
+  
+```
+
+
 ## Part 1
 
+```{r}
+table(data_comp$y,useNA = "always")
+data_comp = data_comp %>% 
+  data.table()
+count <- data_comp[,j = list(n=sum(!is.na(y))), by = "id"]
+table(count$n)
+count <- count[n==3]
+data_comp1 <- data_comp[id %in% count$id]
+table(data_comp1$y,useNA = "always")
+table(data_comp1$treatment,data_comp1$y,useNA = "always")
+gee1 <- geeglm(y ~ treatment * visit, id = id, data = data_comp1, family = binomial(link = "logit"), corstr = "independence")
+summary(gee1)
+```
 
+## Part 2
 
+```{r}
+data_comp2 <- data_comp
+table(data_comp2$y,useNA = "always")
+table(data_comp2$treatment,data_comp2$y,useNA = "always")
+gee2 <- geeglm(y ~ treatment * visit, id = id, data = data_comp2, family = binomial(link = "logit"), corstr = "independence")
+summary(gee2)
+```
 
+## Part 3
+
+```{r}
+data = data %>% 
+  data.table()
+data_comp3 <- lapply(unique(data$id), function(z){tidyr::fill(data[id == z], y)})
+data_comp3 <- rbindlist(data_comp3)
+table(data_comp3$treatment,data_comp3$y,useNA = "always")
+
+gee3 <- geeglm(y ~ treatment * visit, id = id, data = data_comp3, family = binomial(link = "logit"), corstr = "independence")
+summary(gee3)
+```
+
+## Part 4
+
+```{r}
+data4 <- data
+pred <- make.predictorMatrix(data4)
+pred
+pred["y", "id"] <- -2
+pred
+pred <- pred["y",,drop = FALSE]
+pred
+data4$id <- as.integer(data4$id)
+imp <- mice(data4, method = "2l.bin", pred = pred, seed = 719, maxit = 1, m = 5, print = FALSE, blocks = list(c("y")))
+table(mice::complete(imp)$y, useNA = "always")
+```
+
+```{r}
+implist <- mids2mitml.list(imp)
+gee4 <- with(implist, geeglm(y ~ treatment * visit, id=id, family = binomial, corstr = "independence"))
+testEstimates(gee4)
+```
+
+## Part 5
+
+```{r, cache = TRUE}
+lme1 <- mice::complete(imp, "all") %>%
+    purrr::map(lme4::glmer,
+               formula = y ~ treatment * visit + (1 | id),
+               family = binomial) %>%
+    pool() %>%
+    summary()
+```
+
+```{r}
+lme1
+```
+
+When the visit is accounted for the treatment variable becomes not significant in the model. This is true using different assumptions about the model and in different imputation methods.
