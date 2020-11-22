@@ -5,7 +5,6 @@ date: "11/19/2020"
 output: html_document
 ---
 
-
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(viridis)
@@ -28,3 +27,14 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
+
+### Read in data
+
+```{r}
+data = read_delim(file = "./data/toenail.txt", delim = " ", col_names = c("id", "y", "treatment", "month", "visit"), skip = 1)
+
+data
+```
+
+
+
