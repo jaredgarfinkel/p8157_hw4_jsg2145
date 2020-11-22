@@ -10,6 +10,8 @@ library(tidyverse)
 library(viridis)
 library(lme4)
 library(geepack)
+library(data.table)
+library(gee)
 knitr::opts_chunk$set(
 	echo = TRUE,
 	warning = FALSE,
@@ -35,6 +37,71 @@ data = read_delim(file = "./data/toenail.txt", delim = " ", col_names = c("id", 
 
 data
 ```
+
+# Question 1
+
+## Part 1
+
+```{r}
+df = data %>% 
+  data.table()
+# add response at lag 1 
+df[,y_1 := shift(y,n=1,type="lag", fill = NA), by = "id"]
+## transition probabilities 
+tab1 <- table(df$y, df$y_1)
+tab1
+round(prop.table(tab1,margin = 1),2)
+```
+
+```{r}
+# df
+model_lag_1 <- gee(y ~ treatment * y_1 + month, corstr = "independence", family = binomial("logit"), id = id, data = df)
+round(summary(model_lag_1)$coeff,2)
+```
+## Part 2
+
+```{r}
+df2 = data %>% 
+  data.table()
+# add response at lag 1 
+df[,y_2 := shift(y,n=2,type="lag", fill = NA), by = "id"]
+df2[,y_2 := shift(y,n=2,type="lag", fill = NA), by = "id"]
+## transition probabilities 
+tab2 <- table(df$y, df$y_2)
+tab2
+round(prop.table(tab2,margin = 1),2)
+```
+
+```{r}
+model_lag_2 <- gee(y ~ treatment * y_2 + month, corstr = "independence", family = binomial("logit"), id = id, data = df2)
+round(summary(model_lag_2)$coeff,2)
+```
+
+```{r}
+model_lag_2b <- gee(y ~ treatment * (y_1 + y_2) + month, corstr = "independence", family = binomial("logit"), id = id, data = df)
+round(summary(model_lag_2b)$coeff,2)
+```
+
+A second order model shows significant association between the second order lag and the outcome. When the first order lag variable is added back in, the second order variable remains significant.
+
+## Part 3
+
+The intercept is the log odds for those who were in the treatment group B who did not have onycholysis in the previous two visits.
+
+The treatment estimate is the log odds for those who were in treatment group B who had an identical status for onycholysis in the previous visit and the visit before that.
+
+The y_1 and y_2 variables are the log odds for those with and without onycholysis in their previous visit or second previous visit who currently have an identical status for treatment group.
+
+The month variable is the log odds of having onycholysis holding treatment group and the status of onycholysis in the previous visit or second previous visit constant.
+
+## Part 4
+
+In these interpretations we assume that by conditioning on at least on lagged variable, all residual error can be due to random error.
+
+# Question 2
+
+## Part 1
+
 
 
 
